@@ -13,14 +13,30 @@ def connect():
 
 def deleteMatches():
     """Remove all the match records from the database."""
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("""UPDATE players SET score = 0;""")
+    cur.close()
+    conn.close()
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("""DELETE FROM players;""")
+    conn.commit()
+    conn.close()
 
 
 def countPlayers():
     """Returns the number of players currently registered."""
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("""SELECT COUNT (name) FROM players;""")
+    result = cur.fetchone()
+    conn.close()
+    return result[0]
 
 
 def registerPlayer(name):
@@ -32,6 +48,11 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
+    conn = connect()
+    cur = conn.cursor()
+    cur.execute("""INSERT INTO players (name, score) VALUES (%s, 0);""", [(name)] )
+    conn.commit()
+    conn.close()
 
 
 def playerStandings():
@@ -48,6 +69,27 @@ def playerStandings():
         matches: the number of matches the player has played
     """
 
+    conn = connect()
+    cur = conn.cursor()
+
+    standings = []
+
+    # We sort the current position by result score
+    cur.execute(""" SELECT id, name, score FROM players ORDER BY score; """)
+    for line in cur.fetchall():
+        print line 
+        id_num = line[0]
+        name = line[1]
+        score = line[2]
+        if score is None:
+            score = 0
+        wins = (bin(score).count("1"))
+        t = (id_num, name, score, wins)
+        standings += [t]
+    
+    conn.close()
+    return standings
+
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
@@ -56,7 +98,23 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
- 
+
+    conn = connect()
+    cur = conn.cursor()
+    
+    # We update rscore entry for the winner
+    cur.execute ("""SELECT score FROM players WHERE id = %s;""", [winner])
+    winner_update = cur.fetchone()[0] * 2 + 1
+    cur.execute("""UPDATE players SET score = %s WHERE id = %s ;""", [winner_update, winner])
+    
+    # We update score entry for the loser
+    cur.execute("""SELECT score FROM players WHERE id = '%s';""", [loser])
+    loser_update = cur.fetchone()[0] * 2 
+    cur.execute("""UPDATE players SET score = %s WHERE id = '%s';""", [loser_update, loser])
+
+    conn.commit()   
+    conn.close()
+
  
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
@@ -73,5 +131,22 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+    # We first want to know how many players there are
+    c = countPlayers()
 
+    # We will retur the following paring list in the end
+    paring_list = []
 
+    conn = connect()
+    cur = conn.cursor()
+
+    # We sort the current position by result score
+    cur.execute(""" SELECT id, name FROM players ORDER BY score; """)
+    
+    # Construct list of tuples
+    l = cur.fetchall()
+    for i in range(0,c/2):
+        paring_list += [l [2 * i] + l[ 2 * i + 1]]
+
+    conn.close()
+    return paring_list
