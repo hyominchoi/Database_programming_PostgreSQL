@@ -16,20 +16,15 @@ CREATE DATABASE tournament;
 \c tournament;
 
 CREATE TABLE players (
-	id serial,
-	name varchar(20)
+	id serial primary key,
+	name text
 );
 
 -- We assume that a new round of matches begins only after current round ends.
 
 CREATE TABLE matches (
 	game_id serial,
-	winner_id int,
-	loser_id int
+	winner_id int references players(id),
+	loser_id int references players(id)
 
 ); 
-
-
-
-
-
