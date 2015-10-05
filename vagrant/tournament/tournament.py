@@ -16,7 +16,7 @@ def deleteMatches():
     conn = connect()
     cur = conn.cursor()
     cur.execute("""DELETE FROM matches;""")
-    cur.close()
+    conn.commit()
     conn.close()
 
 
@@ -79,26 +79,9 @@ def playerStandings():
     # and positions decided byt first_won_game in the tournament graph
     # the tabe z counts each player's loses
     # lastly we join y and z on the player id's
-    cur.execute(""" SELECT id, name, wins, loses, first_won_game FROM 
-                        (SELECT id, name, COUNT (winner_id) AS wins, 
-                                MIN (game_id) AS first_won_game FROM 
-                                (players LEFT JOIN matches ON players.id = matches.winner_id)x
-                         GROUP BY id, name)y 
-                    LEFT JOIN 
-                        (SELECT loser_id, COUNT (loser_id) AS loses FROM matches 
-                        GROUP BY loser_id)z
-                    ON y.id = z.loser_id 
-                    ORDER BY wins DESC, first_win_game; """)
+    cur.execute(""" SELECT * FROM wins_and_matches; """)
     for line in cur.fetchall():
-        id_num = line[0]
-        name = line[1]
-        wins = line[2]
-        loses = line[3]
-        if (loses is None):
-            loses = 0
-        matches = wins + loses
-        t = (id_num, name, wins, matches)
-        standings += [t]
+        standings += [line]
     conn.close()
     return standings
 
@@ -112,7 +95,7 @@ def reportMatch(winner, loser):
     """
     conn = connect()
     cur = conn.cursor()
-    # We update the "matches" table
+    # We insert a new row to "matches" table
     cur.execute("""INSERT INTO matches (winner_id, loser_id) VALUES ('%s', '%s');""", [winner, loser])
     conn.commit()   
     conn.close()

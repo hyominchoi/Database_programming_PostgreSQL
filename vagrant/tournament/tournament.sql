@@ -28,3 +28,13 @@ CREATE TABLE matches (
 	loser_id int references players(id)
 
 ); 
+
+CREATE VIEW wins_and_matches AS 
+SELECT players.id AS player_id,
+	   players.name AS player_name,
+	   (SELECT COUNT (*) FROM matches WHERE players.id = matches.winner_id) as total_wins,
+	   (SELECT COUNT (*) FROM matches WHERE players.id = matches.winner_id 
+	   		OR players.id = matches.loser_id) AS total_matches
+FROM players
+ORDER BY total_wins DESC;
+
