@@ -1,4 +1,3 @@
-rdb-fullstack
-=============
-
-Common code for the Relational Databases and Full Stack Fundamentals courses
+rdb-fullstack: description added - [Hyomin Choi]
+==================================================
+This repository was forked from Udacity Full Stack Nanodegree program repository containing common code/ starting code for this project.
