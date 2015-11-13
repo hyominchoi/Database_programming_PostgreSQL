@@ -8,3 +8,6 @@ to see the description of the Swiss Pairing Project python code and README.md
 
 * vagrant/Vagrantfile 
 is needed for running virtual machine. Please loot at vagrant/tournament/README.md for detailed explanation.
+
+* For the original repo, please go to: 
+https://github.com/udacity/fullstack-nanodegree-vm
